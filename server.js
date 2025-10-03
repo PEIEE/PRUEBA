@@ -5,9 +5,23 @@ const io = require('socket.io')(http);
 
 app.use(express.static('public'));
 
+let users = {};
+
 io.on('connection', socket => {
+  // Configura perfil de usuario
+  socket.on('set profile', profile => {
+    users[socket.id] = profile;
+    io.emit('users list', Object.values(users));
+  });
+
+  // Mensaje de chat
   socket.on('chat message', data => {
-    io.emit('chat message', data); // Envía mensaje, apodo e imagen a todos los usuarios
+    io.emit('chat message', data);
+  });
+
+  socket.on('disconnect', () => {
+    delete users[socket.id];
+    io.emit('users list', Object.values(users));
   });
 });
 
